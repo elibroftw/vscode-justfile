@@ -78,7 +78,13 @@ export class JustTaskProvider implements vscode.TaskProvider {
 		if (task) {
 			// resolveTask requires that the same definition object be used.
 			const definition: JustTaskDefinition = <any>_task.definition;
-			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', new vscode.ShellExecution(`just ${definition.task}`));
+			// TODO: get the shell
+			// TODO: settings to use nix instead
+			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', new vscode.ShellExecution(`${definition.task}`, {
+				executable: '/nix/var/nix/profiles/default/bin/nix',
+				shellArgs: ['develop', '--print-build-logs', '--command', 'just'],
+				env: process.env as Record<string, string>
+			}));
 		}
 		return undefined;
 	}

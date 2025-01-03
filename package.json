@@ -37,12 +37,19 @@
       "properties": {
         "just-recipe-runner.useNix": {
           "type": "string",
-          "enum": ["yes", "no", "auto"],
+          "enum": [
+            "yes",
+            "no",
+            "auto"
+          ],
           "default": "auto",
           "description": "run just inside nix develop, auto use nix if flake.nix is detected, never run in nix"
         }
       }
     }
+  },
+  "repository": {
+    "url": "https://github.com/elibroftw/vscode-justfile"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -3,7 +3,8 @@
   "displayName": "Just Recipe Runner",
   "description": "Run recipes from a justfile even in a nix shell",
   "publisher": "ElijahLopez",
-  "version": "0.0.1",
+  "icon": "images/icon.png",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.95.0"
   },

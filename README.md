@@ -27,6 +27,10 @@ Users appreciate release notes as you update your extension.
 
 Initial release of `just-recipe-runner`
 
+### 0.0.2
+
+Added icon
+
 ## Publishing
 
 - `vsce package` to build

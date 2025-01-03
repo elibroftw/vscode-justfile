@@ -31,7 +31,18 @@
           }
         }
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Justfile Tasks",
+      "properties": {
+        "just-recipe-runner.useNix": {
+          "type": "string",
+          "enum": ["yes", "no", "auto"],
+          "default": "auto",
+          "description": "run just inside nix develop, auto use nix if flake.nix is detected, never run in nix"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

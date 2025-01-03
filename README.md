@@ -26,3 +26,9 @@ Users appreciate release notes as you update your extension.
 ### 0.0.1
 
 Initial release of `just-recipe-runner`
+
+## Publishing
+
+- `vsce package` to build
+- `vsce publish` requires a personal access token
+- [Publishing Extensions tutorial](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)

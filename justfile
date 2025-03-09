@@ -1,8 +1,12 @@
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
-# run hello world just command on windows
-hello-world-windows:
+hello-world:
+    echo "Hello, world!"
+
+with-arg arg:
     Write-Host "Hello, world!"
 
-hello-world-windows2:
-    Write-Host "Hello, world!"
+arch := "wasm"
+
+advanced triple=(arch + "-unknown-unknown") input=(arch / "input.dat"):
+  ./test {{triple}}

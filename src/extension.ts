@@ -48,7 +48,7 @@ export class JustTaskProvider implements vscode.TaskProvider {
 			// resolveTask requires that the same definition object be used.
 			const definition: JustTaskDefinition = <any>_task.definition;
 			const commandLine = getCommandLine(definition.task, this.flakeExists ?? false);
-			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', new vscode.ShellExecution(commandLine, { cwd: definition.dir }));
+			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', getExecution(definition));
 		}
 		return undefined;
 	}
@@ -82,6 +82,8 @@ interface JustTaskDefinition extends vscode.TaskDefinition {
 	 * The dir of the justfile containing the task
 	 */
 	dir: string;
+	promptForArgs: boolean;
+	flakeExists: boolean;
 }
 
 const buildNames: string[] = ['build', 'compile', 'watch'];
@@ -121,6 +123,24 @@ enum UseNix {
 	AUTO = 'auto',
 	TRUE = 'yes',
 	FALSE = 'no'
+}
+
+function getExecution(definition: JustTaskDefinition) {
+	// TODO: if promptForArgs,: follow https://stackoverflow.com/a/50952101
+	// linux: `"echo 'Enter command line arguments: '; read cmdargs;`
+	// windows: `$cmdargs = read-host 'Enter command line arguments'`
+
+	const config = vscode.workspace.getConfiguration('just-recipe-runner');
+	let useNix = config.get('useNix') as UseNix;
+	if (useNix === UseNix.AUTO) { // auto
+		// NOTE: won't work on Windows dues to Nix needing WSL2
+		useNix = definition.flakeExists ? UseNix.TRUE : UseNix.FALSE;
+	}
+	let commandLine = useNix === UseNix.TRUE ?
+		`/nix/var/nix/profiles/default/bin/nix develop --print-build-logs --command just ${definition.task}`
+		: `just ${definition.task}`;
+
+	return new vscode.ShellExecution(commandLine, { cwd: definition.dir });
 }
 
 function getCommandLine(taskName: string, flakeExists: boolean): string {
@@ -164,16 +184,19 @@ async function getJustTasks(): Promise<vscode.Task[]> {
 				const recipeLines = stdout.trim().split('\n').splice(1);
 				for (const line of recipeLines) {
 					const [recipeName, docComment] = line.split('#', 2);
-					const taskName = recipeName.trim();
+					const parts = recipeName.trim().split(' ');
+					const taskName = parts[0];
 					const taskDetail = docComment?.trim();
 
-					const kind: JustTaskDefinition = {
+					const flakeExists = await flakeNixExists(workspaceFolder.uri.fsPath);
+					const definition: JustTaskDefinition = {
 						type: 'just',
 						task: taskName,
-						dir: workspaceFolder.uri.fsPath
+						dir: workspaceFolder.uri.fsPath,
+						promptForArgs: parts.length > 1,
+						flakeExists
 					};
-					const flakeExists = await flakeNixExists(workspaceFolder.uri.fsPath);
-					const task = new vscode.Task(kind, workspaceFolder, taskName, 'just', new vscode.ShellExecution(getCommandLine(taskName, flakeExists)));
+					const task = new vscode.Task(definition, workspaceFolder, taskName, 'just', getExecution(definition));
 					task.detail = taskDetail;
 					const lowerCaseLine = line.toLowerCase();
 					if (isBuildTask(lowerCaseLine)) {

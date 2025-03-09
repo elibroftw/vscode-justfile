@@ -8,7 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Fixed
 
-- Tasks that take in arguments (you can run the task, but entering arguments is still a TODO)
+- Tasks that take arguments (you can run the task now, however required argument tasks are not runnable)
 
 ## [0.0.3] - 2025-01-04
 

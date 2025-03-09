@@ -15,23 +15,9 @@ An extension that parses `justfile`s and adds recipes as tasks in VSCode. This e
 
 - `just-recipe-runner.useNix`: whether to run just recipe command in nix or not
 
-## Release Notes
-
-### 0.0.1
-
-Initial release of `just-recipe-runner`
-
-### 0.0.2
-
-Added icon
-
-### 0.0.3
-
-Cleanup README
-
 ## Publishing
 
-- `vsce package` to build
-- `vsce publish` requires a personal access token
+- `npx @vscode/vsce package` to build
+- `npx @vscode/vsce publish` requires a personal access token
 - [Publishing Extensions tutorial](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
 - [Visual Studio Marketplace Publisher](https://marketplace.visualstudio.com/manage/publishers/ElijahLopez)

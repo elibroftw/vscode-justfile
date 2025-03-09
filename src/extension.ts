@@ -125,22 +125,33 @@ enum UseNix {
 	FALSE = 'no'
 }
 
-function getExecution(definition: JustTaskDefinition) {
-	// TODO: if promptForArgs,: follow https://stackoverflow.com/a/50952101
-	// linux: `"echo 'Enter command line arguments: '; read cmdargs;`
-	// windows: `$cmdargs = read-host 'Enter command line arguments'`
+const EXPERIMENTAL_FEATURE = false;
 
+function getExecution(definition: JustTaskDefinition) {
 	const config = vscode.workspace.getConfiguration('just-recipe-runner');
 	let useNix = config.get('useNix') as UseNix;
-	if (useNix === UseNix.AUTO) { // auto
-		// NOTE: won't work on Windows dues to Nix needing WSL2
+	if (useNix === UseNix.AUTO) {
 		useNix = definition.flakeExists ? UseNix.TRUE : UseNix.FALSE;
 	}
-	let commandLine = useNix === UseNix.TRUE ?
+
+	let baseCommand = useNix === UseNix.TRUE ?
 		`/nix/var/nix/profiles/default/bin/nix develop --print-build-logs --command just ${definition.task}`
 		: `just ${definition.task}`;
 
-	return new vscode.ShellExecution(commandLine, { cwd: definition.dir });
+	if (definition.promptForArgs && EXPERIMENTAL_FEATURE) {
+		const isWindows = process.platform === 'win32';
+		if (isWindows) {
+			// Windows - powershell
+			const promptCmd = `$cmdargs = Read-Host 'Enter arguments for ${definition.task}'`;
+			baseCommand = `${promptCmd}; ${baseCommand} $cmdargs`;
+		} else {
+			// Linux/macOS - bash/zsh
+			const promptCmd = `read -p "Enter arguments for ${definition.task}: " cmdargs`;
+			baseCommand = `${promptCmd}; ${baseCommand} "$cmdargs"`;
+		}
+	}
+
+	return new vscode.ShellExecution(baseCommand, { cwd: definition.dir });
 }
 
 function getCommandLine(taskName: string, flakeExists: boolean): string {

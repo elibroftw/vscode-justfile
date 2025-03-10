@@ -41,14 +41,14 @@ export class JustTaskProvider implements vscode.TaskProvider {
 
 	public resolveTask(_task: vscode.Task): vscode.Task | undefined {
 		// resolve tasks allows vscode to skip the provideTasks and execute a specific task without knowing it's available
-		const task = _task.definition.task;
+		const taskName = _task.definition.task;
 		// A just task consists of a task and an optional file as specified in justTaskDefinition
 		// Make sure that this looks like a just task by checking that there is a task.
-		if (task) {
+		if (taskName) {
 			// resolveTask requires that the same definition object be used.
-			const definition: JustTaskDefinition = <any>_task.definition;
+			const definition = _task.definition;
 			const commandLine = getCommandLine(definition.task, this.flakeExists ?? false);
-			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', getExecution(definition));
+			return new vscode.Task(definition, _task.scope ?? vscode.TaskScope.Workspace, definition.task, 'just', new vscode.ShellExecution(commandLine, { cwd: definition.dir }));
 		}
 		return undefined;
 	}
@@ -128,15 +128,7 @@ enum UseNix {
 const EXPERIMENTAL_FEATURE = false;
 
 function getExecution(definition: JustTaskDefinition) {
-	const config = vscode.workspace.getConfiguration('just-recipe-runner');
-	let useNix = config.get('useNix') as UseNix;
-	if (useNix === UseNix.AUTO) {
-		useNix = definition.flakeExists ? UseNix.TRUE : UseNix.FALSE;
-	}
-
-	let baseCommand = useNix === UseNix.TRUE ?
-		`/nix/var/nix/profiles/default/bin/nix develop --print-build-logs --command just ${definition.task}`
-		: `just ${definition.task}`;
+	let baseCommand = getCommandLine(definition.task, definition.flakeExists);
 
 	if (definition.promptForArgs && EXPERIMENTAL_FEATURE) {
 		const isWindows = process.platform === 'win32';
@@ -192,18 +184,18 @@ async function getJustTasks(): Promise<vscode.Task[]> {
 				getOutputChannel().show(true);
 			}
 			if (stdout) {
+				const flakeExists = await flakeNixExists(workspaceFolder.uri.fsPath);
+
 				const recipeLines = stdout.trim().split('\n').splice(1);
 				for (const line of recipeLines) {
 					const [recipeName, docComment] = line.split('#', 2);
 					const parts = recipeName.trim().split(' ');
 					const taskName = parts[0];
 					const taskDetail = docComment?.trim();
-
-					const flakeExists = await flakeNixExists(workspaceFolder.uri.fsPath);
 					const definition: JustTaskDefinition = {
 						type: 'just',
 						task: taskName,
-						dir: workspaceFolder.uri.fsPath,
+						dir: folderString,
 						promptForArgs: parts.length > 1,
 						flakeExists
 					};

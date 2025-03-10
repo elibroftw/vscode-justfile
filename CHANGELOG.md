@@ -4,6 +4,12 @@ All notable changes to the "just-recipe-runner" extension will be documented in 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.5] - 2025-03-10
+
+### Fixed
+
+- Resolve task
+
 ## [0.0.4] - 2025-03-09
 
 ### Fixed

@@ -19,5 +19,5 @@ An extension that parses `justfile`s and adds recipes as tasks in VSCode. This e
 
 - `npx @vscode/vsce package` to build
 - `npx @vscode/vsce publish` requires a personal access token
-- [Publishing Extensions tutorial](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
 - [Visual Studio Marketplace Publisher](https://marketplace.visualstudio.com/manage/publishers/ElijahLopez)
+- [Publishing Extensions tutorial](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
